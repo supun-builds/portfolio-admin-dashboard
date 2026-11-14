@@ -26,7 +26,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="Dashboard" description="A quick look at your portfolio.">
-        <Button variant="gradient" render={<Link href="/dashboard/projects/new" />}><Plus /> New project</Button>
+        <Button variant="gradient" nativeButton={false} render={<Link href="/dashboard/projects/new" />}><Plus /> New project</Button>
       </PageHeader>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -53,7 +53,7 @@ export default function DashboardPage() {
               <CardTitle>Latest messages</CardTitle>
               <CardDescription>From the “Let’s Connect” form</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" render={<Link href="/dashboard/messages" />}>View all <ArrowRight /></Button>
+            <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/dashboard/messages" />}>View all <ArrowRight /></Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-1">

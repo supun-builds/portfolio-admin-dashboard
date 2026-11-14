@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Check, Globe } from "lucide-react";
+import { Check, Globe, Plus } from "lucide-react";
 import { Github } from "@/components/brand-icons";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { ImageUpload } from "@/components/image-upload";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -31,9 +32,38 @@ export function ProjectForm({ project }: { project?: Project }) {
   const [featured, setFeatured] = useState(project?.featured ?? false);
   const [published, setPublished] = useState((project?.status ?? "PUBLISHED") === "PUBLISHED");
 
-  useEffect(() => { api.get("/api/technologies").then((r) => setAllTech(r.data.technologies)).catch(() => {}); }, []);
+  // "Add new technology" inline dialog state
+  const [addTechOpen, setAddTechOpen] = useState(false);
+  const [newTechName, setNewTechName] = useState("");
+  const [newTechLogo, setNewTechLogo] = useState<ImageRef[]>([]);
+  const [addingTech, setAddingTech] = useState(false);
+
+  const loadTech = () => api.get("/api/technologies").then((r) => setAllTech(r.data.technologies)).catch(() => {});
+  useEffect(() => { loadTech(); }, []);
 
   const toggleTech = (id: string) => setTechIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+
+  function openAddTech() {
+    setNewTechName("");
+    setNewTechLogo([]);
+    setAddTechOpen(true);
+  }
+
+  async function saveNewTech(e: React.FormEvent) {
+    e.preventDefault();
+    setAddingTech(true);
+    try {
+      const { data } = await api.post("/api/technologies", { name: newTechName, logo: newTechLogo[0]?.id ?? null });
+      toast.success("Technology added");
+      setAddTechOpen(false);
+      // Refresh list and auto-select the new technology
+      const { data: listData } = await api.get("/api/technologies");
+      setAllTech(listData.technologies);
+      const created = listData.technologies.find((t: Tech) => t.id === data.id || t.name === newTechName);
+      if (created) setTechIds((cur) => [...cur, created.id]);
+    } catch { /* toast by interceptor */ }
+    setAddingTech(false);
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -96,12 +126,19 @@ export function ProjectForm({ project }: { project?: Project }) {
 
           <Card className="glass">
             <CardHeader>
-              <CardTitle>Technologies used</CardTitle>
-              <CardDescription>Pick from your technology list.</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Technologies used</CardTitle>
+                  <CardDescription>Pick from your technology list.</CardDescription>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={openAddTech}>
+                  <Plus /> Add new
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {allTech.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No technologies yet. Add some on the Technologies page first.</p>
+                <p className="text-sm text-muted-foreground">No technologies yet. Add one using the button above.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {allTech.map((t) => {
@@ -136,6 +173,30 @@ export function ProjectForm({ project }: { project?: Project }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add new technology dialog */}
+      <Dialog open={addTechOpen} onOpenChange={(o) => !o && setAddTechOpen(false)}>
+        <DialogContent>
+          <form onSubmit={saveNewTech} className="grid gap-4">
+            <DialogHeader>
+              <DialogTitle>Add technology</DialogTitle>
+              <DialogDescription>A name and a logo (square works best). It will be added to your list and selected for this project.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="new-tech-name">Name</Label>
+              <Input id="new-tech-name" required maxLength={60} value={newTechName} onChange={(e) => setNewTechName(e.target.value)} placeholder="React" autoFocus />
+            </div>
+            <div className="space-y-2">
+              <Label>Logo <span className="text-muted-foreground">(optional)</span></Label>
+              <ImageUpload value={newTechLogo} onChange={setNewTechLogo} max={1} shape="square" />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddTechOpen(false)}>Cancel</Button>
+              <Button type="submit" variant="gradient" disabled={addingTech}>{addingTech && <Spinner />} Add technology</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }
