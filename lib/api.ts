@@ -7,7 +7,15 @@ declare module "axios" {
   }
 }
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+function getBaseUrl(): string {
+  let url = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").trim().replace(/\/+$/, "");
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = `https://${url}`;
+  }
+  return url;
+}
+
+export const API_URL = getBaseUrl();
 
 const api = axios.create({ baseURL: API_URL, withCredentials: true });
 
