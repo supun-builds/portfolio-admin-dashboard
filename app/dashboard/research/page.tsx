@@ -176,12 +176,11 @@ export default function ResearchPage() {
 
       <ConfirmDialog
         open={!!toDelete}
+        onOpenChange={(o) => !o && setToDelete(null)}
         title="Delete research item?"
         description={`This will permanently remove "${toDelete?.title}".`}
-        confirmLabel={deleting ? "Deleting…" : "Delete"}
-        destructive
+        loading={deleting}
         onConfirm={remove}
-        onCancel={() => setToDelete(null)}
       />
     </>
   );
