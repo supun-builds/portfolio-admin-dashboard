@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Code2, FolderKanban, Inbox, LayoutDashboard, LogOut, Sparkles, UserRound, type LucideIcon } from "lucide-react";
+import { BookOpen, Code2, FolderKanban, GraduationCap, Inbox, LayoutDashboard, LogOut, Sparkles, UserRound, type LucideIcon } from "lucide-react";
 import api from "@/lib/api";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
@@ -46,6 +46,7 @@ export function AppSidebar({ unread }: { unread: number }) {
       label: "Content",
       items: [
         { label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
+        { label: "Research & Writing", href: "/dashboard/research", icon: GraduationCap },
         { label: "Technologies", href: "/dashboard/technologies", icon: Code2 },
         { label: "Profile & CV", href: "/dashboard/profile", icon: UserRound },
       ],

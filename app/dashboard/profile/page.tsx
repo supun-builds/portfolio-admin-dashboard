@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileText, Mail, MapPin, Phone, Trash2, Upload } from "lucide-react";
+import { BookOpen, FileText, GraduationCap, Mail, MapPin, Phone, Trash2, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import { Github, Linkedin } from "@/components/brand-icons";
 import api, { uploadFile } from "@/lib/api";
@@ -53,11 +53,39 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!p) return;
     setSaving(true);
-    const { fullName, headline, bio, githubUrl, linkedinUrl, connectText, email, phone, location, openToWork } = p;
+    const {
+      fullName,
+      headline,
+      bio,
+      githubUrl,
+      linkedinUrl,
+      researchSubtitle,
+      researchGateUrl,
+      mediumUrl,
+      connectText,
+      email,
+      phone,
+      location,
+      openToWork,
+    } = p;
     try {
       await api.put("/api/profile", {
-        fullName, headline, bio, githubUrl: githubUrl.trim(), linkedinUrl: linkedinUrl.trim(), connectText, email: email.trim(), phone, location, openToWork,
-        avatar: avatar[0]?.id ?? null, cvFile: cv?.id ?? null, cvName: cv?.name ?? "",
+        fullName,
+        headline,
+        bio,
+        githubUrl: githubUrl.trim(),
+        linkedinUrl: linkedinUrl.trim(),
+        researchSubtitle: (researchSubtitle ?? "").trim(),
+        researchGateUrl: (researchGateUrl ?? "").trim(),
+        mediumUrl: (mediumUrl ?? "").trim(),
+        connectText,
+        email: email.trim(),
+        phone,
+        location,
+        openToWork,
+        avatar: avatar[0]?.id ?? null,
+        cvFile: cv?.id ?? null,
+        cvName: cv?.name ?? "",
       });
       toast.success("Profile saved");
     } catch { /* interceptor */ }
@@ -111,6 +139,54 @@ export default function ProfilePage() {
             </button>
           )}
           <input ref={cvInput} type="file" hidden accept="application/pdf" onChange={(e) => pickCv(e.target.files?.[0])} />
+        </CardContent>
+      </Card>
+
+      <Card className="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GraduationCap className="size-5 text-primary" /> Research & Writing Header
+          </CardTitle>
+          <CardDescription>Configure the subtitle and external research profile links shown on your site.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="researchSubtitle">Research Section Subtitle</Label>
+            <Textarea
+              id="researchSubtitle"
+              rows={2}
+              maxLength={300}
+              value={p.researchSubtitle ?? ""}
+              onChange={(e) => set("researchSubtitle", e.target.value)}
+              placeholder="My final-year thesis, two extended abstracts published at HIRS 2025, and the guides I write on Medium."
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="researchGate" className="flex items-center gap-1.5">
+                <BookOpen className="size-3.5 text-primary" /> ResearchGate URL
+              </Label>
+              <Input
+                id="researchGate"
+                type="url"
+                value={p.researchGateUrl ?? ""}
+                onChange={(e) => set("researchGateUrl", e.target.value)}
+                placeholder="https://researchgate.net/profile/you"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="medium" className="flex items-center gap-1.5">
+                <FileText className="size-3.5 text-primary" /> Medium URL
+              </Label>
+              <Input
+                id="medium"
+                type="url"
+                value={p.mediumUrl ?? ""}
+                onChange={(e) => set("mediumUrl", e.target.value)}
+                placeholder="https://medium.com/@you"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
